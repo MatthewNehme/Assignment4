@@ -8,70 +8,47 @@ int extraMemoryAllocated;
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
-    if (l < r)
-    {
-        int m = l + (r - l) / 2;
-        mergeSort(pData, l, m);
-        mergeSort(pData, m+1, r);
- 
-        int i, j, k;
-        int n1 = m - l + 1;
-        int n2 = r - m;
- 
-        int L[n1], R[n2];
- 
-        for (i = 0; i < n1; i++)
-            L[i] = pData[l + i];
-        for (j = 0; j < n2; j++)
-            R[j] = pData[m + 1+ j];
- 
-        i = 0; j = 0; k = l;
-        while (i < n1 && j < n2)
-        {
-            if (L[i] <= R[j])
-            {
-                pData[k] = L[i];
-                i++;
-            }
-            else
-            {
-                pData[k] = R[j];
-                j++;
-            }
-            k++;
-        }
- 
-        while (i < n1)
-        {
-            pData[k] = L[i];
-            i++;
-            k++;
-        }
- 
-        while (j < n2)
-        {
-            pData[k] = R[j];
-            j++;
-            k++;
+    if (l >= r) return;
+    int mid = (l + r) / 2;
+    mergeSort(pData, l, mid);
+    mergeSort(pData, mid + 1, r);
+
+    int* tmp = (int*) malloc(sizeof(int) * (r - l + 1));
+    extraMemoryAllocated += sizeof(int) * (r - l + 1);
+
+    int i = l, j = mid + 1, k = 0;
+    while (i <= mid && j <= r) {
+        if (pData[i] <= pData[j]) {
+            tmp[k++] = pData[i++];
+        } else {
+            tmp[k++] = pData[j++];
         }
     }
+    while (i <= mid) {
+        tmp[k++] = pData[i++];
+    }
+    while (j <= r) {
+        tmp[k++] = pData[j++];
+    }
+
+    memcpy(&pData[l], tmp, sizeof(int) * (r - l + 1));
+    extraMemoryAllocated -= sizeof(int) * (r - l + 1);
+
+    free(tmp);
 }
 
 // implement insertion sort
 // extraMemoryAllocated counts bytes of memory allocated
 void insertionSort(int* pData, int n)
 {
-    int i, j, key;
-
-    for (i = 1; i < n; i++) {
-        key = pData[i];
-        j = i - 1;
-
+    extraMemoryAllocated = 0;
+    for (int i = 1; i < n; i++) {
+        int key = pData[i];
+        int j = i - 1;
         while (j >= 0 && pData[j] > key) {
             pData[j + 1] = pData[j];
-            j = j - 1;
+            j--;
         }
-
         pData[j + 1] = key;
     }
 }
@@ -80,16 +57,16 @@ void insertionSort(int* pData, int n)
 // extraMemoryAllocated counts bytes of extra memory allocated
 void bubbleSort(int* pData, int n)
 {
-    int i, j, temp;
-    for (i = 0; i < n - 1; i++)
-    {
-        for (j = 0; j < n - i - 1; j++)
-        {
-            if (pData[j] > pData[j + 1])
-            {
-                temp = pData[j];
+    extraMemoryAllocated = 0;
+    int swapped = 1;
+    for (int i = 0; i < n - 1 && swapped; i++) {
+        swapped = 0;
+        for (int j = 0; j < n - i - 1; j++) {
+            if (pData[j] > pData[j + 1]) {
+                int tmp = pData[j];
                 pData[j] = pData[j + 1];
-                pData[j + 1] = temp;
+                pData[j + 1] = tmp;
+                swapped = 1;
             }
         }
     }
@@ -99,26 +76,22 @@ void bubbleSort(int* pData, int n)
 // extraMemoryAllocated counts bytes of extra memory allocated
 void selectionSort(int* pData, int n)
 {
-    int i, j, minIndex, temp;
-    for (i = 0; i < n - 1; i++)
-    {
-        minIndex = i;
-        for (j = i + 1; j < n; j++)
-        {
-            if (pData[j] < pData[minIndex])
-            {
+    extraMemoryAllocated = 0;
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < n; j++) {
+            if (pData[j] < pData[minIndex]) {
                 minIndex = j;
             }
         }
-        if (minIndex != i)
-        {
-            temp = pData[i];
+        if (minIndex != i) {
+            int tmp = pData[i];
             pData[i] = pData[minIndex];
-            pData[minIndex] = temp;
+            pData[minIndex] = tmp;
         }
     }
 }
-// parses input file to an integer array
+
 int parseData(char *inputFileName, int **ppData)
 {
 	FILE* inFile = fopen(inputFileName,"r");
